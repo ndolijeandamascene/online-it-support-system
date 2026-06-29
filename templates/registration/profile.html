@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block title %}Profile | Online IT Support{% endblock %}
+{% block breadcrumb %}Profile{% endblock %}
+
+{% block page_header %}
+<div class="page-title">
+    <div>
+        <p class="text-uppercase text-primary fw-bold small mb-1">Account</p>
+        <h1>User profile</h1>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<form class="card" method="post">
+    {% csrf_token %}
+    <div class="card-body">
+        <div class="row g-3">
+            {% for field in account_form %}
+                <div class="col-md-4">
+                    <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                </div>
+            {% endfor %}
+            {% for field in profile_form %}
+                <div class="col-md-6">
+                    <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+    <div class="card-footer bg-transparent d-flex justify-content-end">
+        <button class="btn btn-primary" type="submit">Save profile</button>
+    </div>
+</form>
+{% endblock %}

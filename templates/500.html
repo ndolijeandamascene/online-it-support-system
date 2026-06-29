@@ -1,0 +1,4 @@
+{% extends "base.html" %}
+{% block title %}Server Error | Online IT Support{% endblock %}
+{% block breadcrumb %}Server Error{% endblock %}
+{% block content %}<div class="error-page"><h1>500</h1><p>Something went wrong while processing the request.</p><a class="btn btn-primary" href="{% url 'dashboard' %}">Go home</a></div>{% endblock %}

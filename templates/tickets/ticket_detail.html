@@ -1,77 +1,114 @@
 {% extends "base.html" %}
 
-{% block title %}Ticket #{{ ticket.id }} | Online IT Support{% endblock %}
+{% block title %}Ticket {{ ticket.ticket_number|default:ticket.id }} | Online IT Support{% endblock %}
+{% block breadcrumb %}Ticket Detail{% endblock %}
 
-{% block content %}
-<section class="page-heading">
+{% block page_header %}
+<div class="page-title">
     <div>
-        <p class="eyebrow">Ticket {{ ticket.ticket_number|default:ticket.id }}</p>
+        <p class="text-uppercase text-primary fw-bold small mb-1">Ticket {{ ticket.ticket_number|default:ticket.id }}</p>
         <h1>{{ ticket.title }}</h1>
     </div>
-    <a class="button" href="{% url 'ticket_list' %}">Back to tickets</a>
-</section>
-
-<div class="detail-layout">
-    <article class="panel">
-        <div class="meta-grid">
-            <span><strong>Requester</strong>{{ ticket.requester_name }}</span>
-            <span><strong>Email</strong>{{ ticket.requester_email }}</span>
-            <span><strong>Department</strong>{{ ticket.department|default:ticket.department_name|default:"Not specified" }}</span>
-            <span><strong>Assigned to</strong>{{ ticket.assigned_to|default:"Unassigned" }}</span>
-            <span><strong>Category</strong>{{ ticket.get_category_display }}</span>
-            <span><strong>Priority</strong><mark class="pill priority-{{ ticket.priority }}">{{ ticket.get_priority_display }}</mark></span>
-            <span><strong>Status</strong><mark class="pill status-{{ ticket.status }}">{{ ticket.get_status_display }}</mark></span>
-        </div>
-        <h2>Issue description</h2>
-        <p class="description">{{ ticket.description|linebreaksbr }}</p>
-        {% if ticket.resolution_notes %}
-            <h2>Resolution notes</h2>
-            <p class="description">{{ ticket.resolution_notes|linebreaksbr }}</p>
-        {% endif %}
-    </article>
-
-    <aside class="panel">
-        <h2>Update ticket</h2>
-        <form method="post" class="stacked-form">
-            {% csrf_token %}
-            {{ status_form.as_p }}
-            <button class="button button-primary" type="submit" name="action" value="status">Save status</button>
-        </form>
-    </aside>
+    <a class="btn btn-outline-secondary" href="{% url 'ticket_list' %}"><i class="bi bi-arrow-left me-2"></i>Back</a>
 </div>
+{% endblock %}
 
-<section class="panel timeline">
-    <h2>Conversation</h2>
-    {% for update in ticket.updates.all %}
-        <article class="timeline-item">
-            <strong>{{ update.author }}</strong>
-            {% if update.internal %}<mark class="pill">Internal</mark>{% endif %}
-            <time>{{ update.created_at|date:"M j, Y H:i" }}</time>
-            <p>{{ update.note|linebreaksbr }}</p>
+{% block content %}
+<div class="row g-4">
+    <div class="col-xl-8">
+        <article class="card mb-4">
+            <div class="card-body">
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6"><span class="meta-label">Requester</span><strong>{{ ticket.requester_name }}</strong></div>
+                    <div class="col-md-6"><span class="meta-label">Email</span><strong>{{ ticket.requester_email }}</strong></div>
+                    <div class="col-md-6"><span class="meta-label">Department</span><strong>{{ ticket.department|default:ticket.department_name|default:"Not specified" }}</strong></div>
+                    <div class="col-md-6"><span class="meta-label">Assigned to</span><strong>{{ ticket.assigned_to|default:"Unassigned" }}</strong></div>
+                    <div class="col-md-4"><span class="meta-label">Category</span><strong>{{ ticket.get_category_display }}</strong></div>
+                    <div class="col-md-4"><span class="meta-label">Priority</span><span class="badge badge-soft priority-{{ ticket.priority }}">{{ ticket.get_priority_display }}</span></div>
+                    <div class="col-md-4"><span class="meta-label">Status</span><span class="badge badge-soft status-{{ ticket.status }}">{{ ticket.get_status_display }}</span></div>
+                </div>
+                <h2 class="h5">Issue description</h2>
+                <p>{{ ticket.description|linebreaksbr }}</p>
+                {% if ticket.resolution_notes %}
+                    <h2 class="h5 mt-4">Resolution notes</h2>
+                    <p>{{ ticket.resolution_notes|linebreaksbr }}</p>
+                {% endif %}
+            </div>
         </article>
-    {% empty %}
-        <p class="muted">No updates have been added yet.</p>
-    {% endfor %}
 
-    <form method="post" class="stacked-form note-form">
-        {% csrf_token %}
-        {{ update_form.as_p }}
-        <button class="button button-primary" type="submit" name="action" value="note">Add update</button>
-    </form>
-</section>
+        <section class="card mb-4">
+            <div class="card-header bg-transparent"><h2 class="h5 mb-0">Ticket chat</h2></div>
+            <div class="card-body chat-thread">
+                {% for update in ticket.updates.all %}
+                    <article class="chat-message {% if update.internal %}internal{% endif %}">
+                        <div class="chat-bubble">
+                            <div class="d-flex justify-content-between gap-3">
+                                <strong>{{ update.author }}</strong>
+                                <time class="text-muted small">{{ update.created_at|date:"M j, Y H:i" }}</time>
+                            </div>
+                            {% if update.internal %}<span class="badge text-bg-warning mt-2">Internal note</span>{% endif %}
+                            <p class="mb-0 mt-2">{{ update.note|linebreaksbr }}</p>
+                        </div>
+                    </article>
+                {% empty %}
+                    <p class="text-muted mb-0">No updates have been added yet.</p>
+                {% endfor %}
+            </div>
+            <div class="card-footer bg-transparent">
+                <form method="post" class="row g-3">
+                    {% csrf_token %}
+                    {% for field in update_form %}
+                        <div class="{% if field.name == 'note' %}col-12{% elif field.name == 'internal' %}col-12 form-check ms-2{% else %}col-md-6{% endif %}">
+                            {% if field.name == "internal" %}
+                                {{ field }} <label class="form-check-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                            {% else %}
+                                <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                    <div class="col-12"><button class="btn btn-primary" type="submit" name="action" value="note">Send update</button></div>
+                </form>
+            </div>
+        </section>
+    </div>
 
-<section class="panel attachments">
-    <h2>Attachments</h2>
-    {% for attachment in ticket.attachments.all %}
-        <p><a href="{{ attachment.file.url }}">{{ attachment.file.name }}</a> <span class="muted">{{ attachment.uploaded_at|date:"M j, Y H:i" }}</span></p>
-    {% empty %}
-        <p class="muted">No files have been uploaded for this ticket.</p>
-    {% endfor %}
+    <div class="col-xl-4">
+        <aside class="card mb-4">
+            <div class="card-header bg-transparent"><h2 class="h5 mb-0">Update ticket</h2></div>
+            <div class="card-body">
+                <form method="post" class="vstack gap-3" data-confirm="Save ticket changes?">
+                    {% csrf_token %}
+                    {% for field in status_form %}
+                        <div>
+                            <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                            {{ field }}
+                        </div>
+                    {% endfor %}
+                    <button class="btn btn-primary" type="submit" name="action" value="status">Save status</button>
+                </form>
+            </div>
+        </aside>
 
-    <form method="post" enctype="multipart/form-data" class="stacked-form note-form">
-        {% csrf_token %}
-        {{ attachment_form.as_p }}
-        <button class="button button-primary" type="submit" name="action" value="attachment">Upload file</button>
-    </form>
-</section>
+        <aside class="card">
+            <div class="card-header bg-transparent"><h2 class="h5 mb-0">Attached files</h2></div>
+            <div class="card-body">
+                {% for attachment in ticket.attachments.all %}
+                    <a class="file-link" href="{{ attachment.file.url }}"><i class="bi bi-paperclip"></i>{{ attachment.file.name }}</a>
+                {% empty %}
+                    <p class="text-muted">No files have been uploaded.</p>
+                {% endfor %}
+                <form method="post" enctype="multipart/form-data" class="vstack gap-3 mt-3">
+                    {% csrf_token %}
+                    {% for field in attachment_form %}
+                        <div>
+                            <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                            {{ field }}
+                        </div>
+                    {% endfor %}
+                    <button class="btn btn-outline-primary" type="submit" name="action" value="attachment">Upload file</button>
+                </form>
+            </div>
+        </aside>
+    </div>
+</div>
 {% endblock %}

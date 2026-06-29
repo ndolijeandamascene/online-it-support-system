@@ -1,29 +1,39 @@
 {% extends "base.html" %}
 
 {% block title %}Knowledge Base | Online IT Support{% endblock %}
+{% block breadcrumb %}Knowledge Base{% endblock %}
 
-{% block content %}
-<section class="page-heading">
+{% block page_header %}
+<div class="page-title">
     <div>
-        <p class="eyebrow">Self service</p>
+        <p class="text-uppercase text-primary fw-bold small mb-1">Self service</p>
         <h1>Knowledge base</h1>
     </div>
-</section>
+</div>
+{% endblock %}
 
-<form class="filters filters-two" method="get">
-    <input type="search" name="q" value="{{ query }}" placeholder="Search FAQs, guides, and manuals">
-    <button class="button" type="submit">Search</button>
+{% block content %}
+<form class="card card-body mb-4" method="get">
+    <div class="input-group">
+        <span class="input-group-text"><i class="bi bi-search"></i></span>
+        <input class="form-control" type="search" name="q" value="{{ query }}" placeholder="Search FAQs, troubleshooting guides, and manuals">
+        <button class="btn btn-primary" type="submit">Search</button>
+    </div>
 </form>
 
-<section class="card-grid">
+<section class="row g-4">
     {% for article in articles %}
-        <a class="panel article-card" href="{{ article.get_absolute_url }}">
-            <mark class="pill">{{ article.get_category_display }}</mark>
-            <h2>{{ article.title }}</h2>
-            <p>{{ article.summary }}</p>
-        </a>
+        <div class="col-md-6 col-xl-4">
+            <a class="card article-card h-100" href="{{ article.get_absolute_url }}">
+                <div class="card-body">
+                    <span class="badge text-bg-light border">{{ article.get_category_display }}</span>
+                    <h2 class="h5 mt-3">{{ article.title }}</h2>
+                    <p class="text-muted mb-0">{{ article.summary }}</p>
+                </div>
+            </a>
+        </div>
     {% empty %}
-        <div class="empty-state">No knowledge base articles found.</div>
+        <div class="col-12"><div class="card card-body text-center text-muted">No knowledge base articles found.</div></div>
     {% endfor %}
 </section>
 {% endblock %}

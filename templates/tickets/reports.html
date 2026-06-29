@@ -1,39 +1,63 @@
 {% extends "base.html" %}
 
 {% block title %}Reports | Online IT Support{% endblock %}
+{% block breadcrumb %}Reports{% endblock %}
 
-{% block content %}
-<section class="page-heading">
+{% block page_header %}
+<div class="page-title">
     <div>
-        <p class="eyebrow">Analytics</p>
+        <p class="text-uppercase text-primary fw-bold small mb-1">Analytics</p>
         <h1>Reports</h1>
     </div>
-</section>
-
-<div class="reports-grid">
-    <section class="panel">
-        <h2>Tickets by status</h2>
-        {% for item in by_status %}
-            <div class="metric-line"><span>{{ item.status }}</span><strong>{{ item.total }}</strong></div>
-        {% empty %}
-            <p class="muted">No ticket data yet.</p>
-        {% endfor %}
-    </section>
-    <section class="panel">
-        <h2>Tickets by category</h2>
-        {% for item in by_category %}
-            <div class="metric-line"><span>{{ item.category }}</span><strong>{{ item.total }}</strong></div>
-        {% empty %}
-            <p class="muted">No ticket data yet.</p>
-        {% endfor %}
-    </section>
-    <section class="panel">
-        <h2>Department statistics</h2>
-        {% for item in by_department %}
-            <div class="metric-line"><span>{{ item.department__name|default:"Unassigned" }}</span><strong>{{ item.total }}</strong></div>
-        {% empty %}
-            <p class="muted">No ticket data yet.</p>
-        {% endfor %}
-    </section>
+    <div class="btn-group">
+        <button class="btn btn-outline-secondary" type="button"><i class="bi bi-filetype-pdf me-2"></i>PDF</button>
+        <button class="btn btn-outline-secondary" type="button"><i class="bi bi-file-earmark-spreadsheet me-2"></i>Excel</button>
+    </div>
 </div>
+{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    <div class="col-xl-6">
+        <section class="card h-100">
+            <div class="card-header bg-transparent"><h2 class="h5 mb-0">Tickets by status</h2></div>
+            <div class="card-body"><canvas id="reportStatusChart" height="180"></canvas></div>
+        </section>
+    </div>
+    <div class="col-xl-6">
+        <section class="card h-100">
+            <div class="card-header bg-transparent"><h2 class="h5 mb-0">Tickets by category</h2></div>
+            <div class="card-body"><canvas id="reportCategoryChart" height="180"></canvas></div>
+        </section>
+    </div>
+    <div class="col-12">
+        <section class="card">
+            <div class="card-header bg-transparent"><h2 class="h5 mb-0">Department statistics</h2></div>
+            <div class="table-responsive">
+                <table class="table mb-0">
+                    <thead><tr><th>Department</th><th class="text-end">Tickets</th></tr></thead>
+                    <tbody>
+                        {% for item in by_department %}
+                            <tr><td>{{ item.department__name|default:"Unassigned" }}</td><td class="text-end fw-bold">{{ item.total }}</td></tr>
+                        {% empty %}
+                            <tr><td colspan="2" class="text-center text-muted py-4">No ticket data yet.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+</div>
+
+{{ status_chart_labels|json_script:"reportStatusLabels" }}
+{{ status_chart_values|json_script:"reportStatusValues" }}
+{{ category_chart_labels|json_script:"reportCategoryLabels" }}
+{{ category_chart_values|json_script:"reportCategoryValues" }}
+{% endblock %}
+
+{% block scripts %}
+<script>
+    window.SupportCharts.renderDoughnut("reportStatusChart", "reportStatusLabels", "reportStatusValues");
+    window.SupportCharts.renderBar("reportCategoryChart", "reportCategoryLabels", "reportCategoryValues");
+</script>
 {% endblock %}

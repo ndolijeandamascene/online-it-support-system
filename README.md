@@ -23,13 +23,17 @@ The Online IT Support System centralizes IT support operations for companies, sc
 
 ## Features
 
+- Bootstrap 5 responsive application shell with collapsible sidebar and top navigation.
+- Light and dark mode support with a browser preference toggle.
+- Professional login, profile, notification, and branded error pages.
 - Dashboard with ticket status and priority statistics.
+- Chart.js dashboard and report charts.
 - Create support tickets with category, priority, requester, issue details, and file attachments.
-- Search and filter tickets by status or keyword.
+- Search, filter, sort, and paginate tickets.
 - View ticket details with requester metadata and status badges.
 - Assign tickets to IT support staff.
 - Update ticket status, priority, and resolution notes.
-- Add public or internal support-team conversation notes.
+- Integrated ticket conversation interface with public or internal notes.
 - Knowledge base for FAQs, troubleshooting guides, and manuals.
 - Asset-management data model for computers, devices, maintenance, and warranties.
 - Notification and audit-log data models.
@@ -39,7 +43,9 @@ The Online IT Support System centralizes IT support operations for companies, sc
 ## Technology stack
 
 - Backend: Django
-- Frontend: Django Templates, HTML5, CSS3
+- Frontend: Django Templates, HTML5, CSS3, Bootstrap 5, JavaScript ES6
+- Icons: Bootstrap Icons
+- Charts: Chart.js
 - Database: SQLite for development; PostgreSQL recommended for production
 - Authentication: Django Authentication
 - File storage: Django Media

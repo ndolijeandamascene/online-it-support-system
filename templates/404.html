@@ -1,0 +1,4 @@
+{% extends "base.html" %}
+{% block title %}Not Found | Online IT Support{% endblock %}
+{% block breadcrumb %}Not Found{% endblock %}
+{% block content %}<div class="error-page"><h1>404</h1><p>The page you requested could not be found.</p><a class="btn btn-primary" href="{% url 'dashboard' %}">Go home</a></div>{% endblock %}

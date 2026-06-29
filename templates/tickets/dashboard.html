@@ -2,49 +2,92 @@
 {% load ticket_extras %}
 
 {% block title %}Dashboard | Online IT Support{% endblock %}
+{% block breadcrumb %}Dashboard{% endblock %}
 
-{% block content %}
-<section class="page-heading">
+{% block page_header %}
+<div class="page-title">
     <div>
-        <p class="eyebrow">Operations overview</p>
+        <p class="text-uppercase text-primary fw-bold small mb-1">Operations overview</p>
         <h1>IT support dashboard</h1>
     </div>
-    <a class="button button-primary" href="{% url 'ticket_create' %}">Create ticket</a>
-</section>
+    <a class="btn btn-primary" href="{% url 'ticket_create' %}"><i class="bi bi-plus-lg me-2"></i>Create ticket</a>
+</div>
+{% endblock %}
 
-<section class="stats-grid">
+{% block content %}
+<section class="row g-3 mb-4">
     {% for value, label in statuses %}
-        <article class="stat">
-            <span>{{ label }}</span>
-            <strong>{{ stats|get_item:value|default:0 }}</strong>
-        </article>
+        <div class="col-6 col-xl">
+            <article class="card metric-card h-100">
+                <div class="card-body">
+                    <span class="text-muted small">{{ label }}</span>
+                    <strong>{{ stats|get_item:value|default:0 }}</strong>
+                </div>
+            </article>
+        </div>
     {% endfor %}
 </section>
 
-<div class="detail-layout">
-    <section class="panel">
-        <h2>Recent tickets</h2>
-        {% for ticket in recent_tickets %}
-            <a class="mini-row" href="{{ ticket.get_absolute_url }}">
-                <span>
-                    <strong>{{ ticket.ticket_number|default:ticket.id }} {{ ticket.title }}</strong>
-                    <small>{{ ticket.requester_name }}{% if ticket.assigned_to %} · assigned to {{ ticket.assigned_to }}{% endif %}</small>
-                </span>
-                <mark class="pill status-{{ ticket.status }}">{{ ticket.get_status_display }}</mark>
-            </a>
-        {% empty %}
-            <p class="muted">No tickets have been created yet.</p>
-        {% endfor %}
-    </section>
-
-    <aside class="panel">
-        <h2>Priority mix</h2>
-        {% for value, label in priorities %}
-            <div class="metric-line">
-                <span>{{ label }}</span>
-                <strong>{{ priority_stats|get_item:value|default:0 }}</strong>
+<section class="row g-4">
+    <div class="col-xl-8">
+        <div class="card h-100">
+            <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
+                <h2 class="h5 mb-0">Recent activity</h2>
+                <a class="btn btn-sm btn-outline-primary" href="{% url 'ticket_list' %}">View all</a>
             </div>
-        {% endfor %}
-    </aside>
-</div>
+            <div class="list-group list-group-flush">
+                {% for ticket in recent_tickets %}
+                    <a class="list-group-item list-group-item-action d-flex justify-content-between gap-3" href="{{ ticket.get_absolute_url }}">
+                        <span>
+                            <strong>{{ ticket.ticket_number|default:ticket.id }} {{ ticket.title }}</strong>
+                            <small class="d-block text-muted">{{ ticket.requester_name }}{% if ticket.assigned_to %} / assigned to {{ ticket.assigned_to }}{% endif %}</small>
+                        </span>
+                        <span class="badge text-bg-light border align-self-center">{{ ticket.get_status_display }}</span>
+                    </a>
+                {% empty %}
+                    <div class="list-group-item text-muted">No tickets have been created yet.</div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-4">
+        <div class="card h-100">
+            <div class="card-header bg-transparent"><h2 class="h5 mb-0">Ticket analytics</h2></div>
+            <div class="card-body">
+                <canvas id="statusChart" height="210" aria-label="Tickets by status"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-6">
+        <div class="card h-100">
+            <div class="card-header bg-transparent"><h2 class="h5 mb-0">Priority mix</h2></div>
+            <div class="card-body">
+                <canvas id="priorityChart" height="160" aria-label="Tickets by priority"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-6">
+        <div class="card h-100">
+            <div class="card-header bg-transparent"><h2 class="h5 mb-0">Quick actions</h2></div>
+            <div class="card-body quick-actions">
+                <a href="{% url 'ticket_create' %}"><i class="bi bi-send-plus"></i><span>Submit request</span></a>
+                <a href="{% url 'knowledge_list' %}"><i class="bi bi-search"></i><span>Find guide</span></a>
+                <a href="{% url 'reports' %}"><i class="bi bi-file-earmark-bar-graph"></i><span>Open reports</span></a>
+                <a href="{% url 'notifications' %}"><i class="bi bi-bell"></i><span>Notifications</span></a>
+            </div>
+        </div>
+    </div>
+</section>
+
+{{ status_chart_labels|json_script:"statusChartLabels" }}
+{{ status_chart_values|json_script:"statusChartValues" }}
+{{ priority_chart_labels|json_script:"priorityChartLabels" }}
+{{ priority_chart_values|json_script:"priorityChartValues" }}
+{% endblock %}
+
+{% block scripts %}
+<script>
+    window.SupportCharts.renderDoughnut("statusChart", "statusChartLabels", "statusChartValues");
+    window.SupportCharts.renderBar("priorityChart", "priorityChartLabels", "priorityChartValues");
+</script>
 {% endblock %}

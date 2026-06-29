@@ -1,16 +1,20 @@
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from django.db.models import Count, Q
+from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.views.decorators.http import require_http_methods
 
-from .forms import TicketAttachmentForm, TicketForm, TicketStatusForm, TicketUpdateForm
-from .models import AuditLog, KnowledgeArticle, Notification, Ticket
+from .forms import TicketAttachmentForm, TicketForm, TicketStatusForm, TicketUpdateForm, UserAccountForm, UserProfileForm
+from .models import AuditLog, KnowledgeArticle, Notification, Ticket, UserProfile
 
 
 def ticket_list(request):
     query = request.GET.get("q", "").strip()
     status = request.GET.get("status", "").strip()
+    sort = request.GET.get("sort", "-updated_at")
+    allowed_sorts = {"-updated_at", "updated_at", "-created_at", "created_at", "priority", "status"}
     tickets = Ticket.objects.all()
 
     if query:
@@ -24,15 +28,23 @@ def ticket_list(request):
     if status:
         tickets = tickets.filter(status=status)
 
+    if sort not in allowed_sorts:
+        sort = "-updated_at"
+
+    tickets = tickets.order_by(sort)
+    paginator = Paginator(tickets, 10)
+    page_obj = paginator.get_page(request.GET.get("page"))
     stats = Ticket.objects.values("status").annotate(total=Count("id"))
 
     return render(
         request,
         "tickets/ticket_list.html",
         {
-            "tickets": tickets,
+            "tickets": page_obj,
+            "page_obj": page_obj,
             "query": query,
             "status": status,
+            "sort": sort,
             "statuses": Ticket.Status.choices,
             "stats": {item["status"]: item["total"] for item in stats},
         },
@@ -50,6 +62,10 @@ def dashboard(request):
         {
             "stats": {item["status"]: item["total"] for item in stats},
             "priority_stats": {item["priority"]: item["total"] for item in priority_stats},
+            "status_chart_labels": [label for _, label in Ticket.Status.choices],
+            "status_chart_values": [Ticket.objects.filter(status=value).count() for value, _ in Ticket.Status.choices],
+            "priority_chart_labels": [label for _, label in Ticket.Priority.choices],
+            "priority_chart_values": [Ticket.objects.filter(priority=value).count() for value, _ in Ticket.Priority.choices],
             "statuses": Ticket.Status.choices,
             "priorities": Ticket.Priority.choices,
             "recent_tickets": recent_tickets,
@@ -146,5 +162,30 @@ def reports(request):
             "by_status": by_status,
             "by_category": by_category,
             "by_department": by_department,
+            "status_chart_labels": [item["status"] for item in by_status],
+            "status_chart_values": [item["total"] for item in by_status],
+            "category_chart_labels": [item["category"] for item in by_category],
+            "category_chart_values": [item["total"] for item in by_category],
         },
     )
+
+
+@login_required
+def profile(request):
+    profile_obj, _ = UserProfile.objects.get_or_create(user=request.user)
+    account_form = UserAccountForm(request.POST or None, instance=request.user, prefix="account")
+    profile_form = UserProfileForm(request.POST or None, instance=profile_obj, prefix="profile")
+
+    if request.method == "POST" and account_form.is_valid() and profile_form.is_valid():
+        account_form.save()
+        profile_form.save()
+        messages.success(request, "Profile updated successfully.")
+        return redirect("profile")
+
+    return render(request, "registration/profile.html", {"account_form": account_form, "profile_form": profile_form})
+
+
+@login_required
+def notification_center(request):
+    notifications = Notification.objects.filter(Q(recipient=request.user) | Q(recipient__isnull=True))[:50]
+    return render(request, "tickets/notifications.html", {"notifications": notifications})

@@ -1,0 +1,4 @@
+{% extends "base.html" %}
+{% block title %}Forbidden | Online IT Support{% endblock %}
+{% block breadcrumb %}Forbidden{% endblock %}
+{% block content %}<div class="error-page"><h1>403</h1><p>You do not have permission to access this page.</p><a class="btn btn-primary" href="{% url 'dashboard' %}">Go home</a></div>{% endblock %}

@@ -10,4 +10,6 @@ urlpatterns = [
     path("knowledge/", views.knowledge_list, name="knowledge_list"),
     path("knowledge/<int:pk>/", views.knowledge_detail, name="knowledge_detail"),
     path("reports/", views.reports, name="reports"),
+    path("profile/", views.profile, name="profile"),
+    path("notifications/", views.notification_center, name="notifications"),
 ]

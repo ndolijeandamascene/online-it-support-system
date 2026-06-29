@@ -2,57 +2,107 @@
 {% load ticket_extras %}
 
 {% block title %}Tickets | Online IT Support{% endblock %}
+{% block breadcrumb %}Tickets{% endblock %}
 
-{% block content %}
-<section class="page-heading">
+{% block page_header %}
+<div class="page-title">
     <div>
-        <p class="eyebrow">Service desk</p>
+        <p class="text-uppercase text-primary fw-bold small mb-1">Service desk</p>
         <h1>Support tickets</h1>
     </div>
-    <a class="button button-primary" href="{% url 'ticket_create' %}">Create ticket</a>
-</section>
+    <a class="btn btn-primary" href="{% url 'ticket_create' %}"><i class="bi bi-plus-lg me-2"></i>Create ticket</a>
+</div>
+{% endblock %}
 
-<section class="stats-grid">
+{% block content %}
+<section class="row g-3 mb-4">
     {% for value, label in statuses %}
-        <article class="stat">
-            <span>{{ label }}</span>
-            <strong>{{ stats|get_item:value|default:0 }}</strong>
-        </article>
+        <div class="col-6 col-lg">
+            <article class="card metric-card h-100">
+                <div class="card-body">
+                    <span class="text-muted small">{{ label }}</span>
+                    <strong>{{ stats|get_item:value|default:0 }}</strong>
+                </div>
+            </article>
+        </div>
     {% endfor %}
 </section>
 
-<form class="filters" method="get">
-    <input type="search" name="q" value="{{ query }}" placeholder="Search tickets, requester, or issue">
-    <select name="status">
-        <option value="">All statuses</option>
-        {% for value, label in statuses %}
-            <option value="{{ value }}" {% if status == value %}selected{% endif %}>{{ label }}</option>
-        {% endfor %}
-    </select>
-    <button class="button" type="submit">Filter</button>
-</form>
-
-<section class="ticket-table" aria-label="Tickets">
-    <div class="ticket-row ticket-row-head">
-        <span>Ticket</span>
-        <span>Requester</span>
-        <span>Priority</span>
-        <span>Status</span>
-        <span>Updated</span>
+<section class="card">
+    <div class="card-body border-bottom">
+        <form class="row g-3 align-items-end" method="get">
+            <div class="col-lg-6">
+                <label class="form-label">Search</label>
+                <input class="form-control" type="search" name="q" value="{{ query }}" placeholder="Ticket, requester, email, or issue">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Status</label>
+                <select class="form-select" name="status">
+                    <option value="">All statuses</option>
+                    {% for value, label in statuses %}
+                        <option value="{{ value }}" {% if status == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Sort</label>
+                <select class="form-select" name="sort">
+                    <option value="-updated_at" {% if sort == "-updated_at" %}selected{% endif %}>Recently updated</option>
+                    <option value="-created_at" {% if sort == "-created_at" %}selected{% endif %}>Newest</option>
+                    <option value="priority" {% if sort == "priority" %}selected{% endif %}>Priority</option>
+                    <option value="status" {% if sort == "status" %}selected{% endif %}>Status</option>
+                </select>
+            </div>
+            <div class="col-md-1 d-grid">
+                <button class="btn btn-outline-primary" type="submit"><i class="bi bi-funnel"></i></button>
+            </div>
+        </form>
     </div>
-    {% for ticket in tickets %}
-        <a class="ticket-row" href="{{ ticket.get_absolute_url }}">
-            <span>
-                <strong>{{ ticket.ticket_number|default:ticket.id }} {{ ticket.title }}</strong>
-                <small>{{ ticket.get_category_display }}</small>
-            </span>
-            <span>{{ ticket.requester_name }}</span>
-            <span><mark class="pill priority-{{ ticket.priority }}">{{ ticket.get_priority_display }}</mark></span>
-            <span><mark class="pill status-{{ ticket.status }}">{{ ticket.get_status_display }}</mark></span>
-            <span>{{ ticket.updated_at|date:"M j, Y H:i" }}</span>
-        </a>
-    {% empty %}
-        <div class="empty-state">No support tickets found.</div>
-    {% endfor %}
+    <div class="table-responsive">
+        <table class="table align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>Ticket</th>
+                    <th>Requester</th>
+                    <th>Priority</th>
+                    <th>Status</th>
+                    <th>Updated</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for ticket in tickets %}
+                    <tr>
+                        <td>
+                            <strong>{{ ticket.ticket_number|default:ticket.id }} {{ ticket.title }}</strong>
+                            <small class="d-block text-muted">{{ ticket.get_category_display }}</small>
+                        </td>
+                        <td>{{ ticket.requester_name }}</td>
+                        <td><span class="badge badge-soft priority-{{ ticket.priority }}">{{ ticket.get_priority_display }}</span></td>
+                        <td><span class="badge badge-soft status-{{ ticket.status }}">{{ ticket.get_status_display }}</span></td>
+                        <td>{{ ticket.updated_at|date:"M j, Y H:i" }}</td>
+                        <td><a class="btn btn-sm btn-outline-primary" href="{{ ticket.get_absolute_url }}">Open</a></td>
+                    </tr>
+                {% empty %}
+                    <tr><td colspan="6" class="text-center text-muted py-5">No support tickets found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% if page_obj.has_other_pages %}
+        <div class="card-footer bg-transparent">
+            <nav aria-label="Ticket pages">
+                <ul class="pagination mb-0 justify-content-end">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}&q={{ query }}&status={{ status }}&sort={{ sort }}">Previous</a></li>
+                    {% endif %}
+                    <li class="page-item active"><span class="page-link">{{ page_obj.number }}</span></li>
+                    {% if page_obj.has_next %}
+                        <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}&q={{ query }}&status={{ status }}&sort={{ sort }}">Next</a></li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+    {% endif %}
 </section>
 {% endblock %}

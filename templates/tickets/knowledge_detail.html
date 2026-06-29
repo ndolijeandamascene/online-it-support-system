@@ -1,18 +1,23 @@
 {% extends "base.html" %}
 
 {% block title %}{{ article.title }} | Online IT Support{% endblock %}
+{% block breadcrumb %}Knowledge Article{% endblock %}
 
-{% block content %}
-<section class="page-heading">
+{% block page_header %}
+<div class="page-title">
     <div>
-        <p class="eyebrow">{{ article.get_category_display }}</p>
+        <p class="text-uppercase text-primary fw-bold small mb-1">{{ article.get_category_display }}</p>
         <h1>{{ article.title }}</h1>
     </div>
-    <a class="button" href="{% url 'knowledge_list' %}">Back to knowledge</a>
-</section>
+    <a class="btn btn-outline-secondary" href="{% url 'knowledge_list' %}">Back</a>
+</div>
+{% endblock %}
 
-<article class="panel readable">
-    <p class="muted">{{ article.summary }}</p>
-    <div>{{ article.content|linebreaks }}</div>
+{% block content %}
+<article class="card readable">
+    <div class="card-body">
+        <p class="lead text-muted">{{ article.summary }}</p>
+        <div>{{ article.content|linebreaks }}</div>
+    </div>
 </article>
 {% endblock %}

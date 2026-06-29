@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block title %}Notifications | Online IT Support{% endblock %}
+{% block breadcrumb %}Notifications{% endblock %}
+
+{% block page_header %}
+<div class="page-title">
+    <div>
+        <p class="text-uppercase text-primary fw-bold small mb-1">Alerts</p>
+        <h1>Notification center</h1>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<section class="card">
+    <div class="list-group list-group-flush">
+        {% for notification in notifications %}
+            <div class="list-group-item d-flex gap-3">
+                <i class="bi bi-bell-fill text-primary"></i>
+                <div>
+                    <strong>{{ notification.message }}</strong>
+                    <small class="d-block text-muted">{{ notification.created_at|date:"M j, Y H:i" }}</small>
+                </div>
+            </div>
+        {% empty %}
+            <div class="list-group-item text-center text-muted py-5">No notifications yet.</div>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}
