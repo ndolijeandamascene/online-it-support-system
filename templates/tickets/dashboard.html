@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% load ticket_extras %}
+
+{% block title %}Dashboard | Online IT Support{% endblock %}
+
+{% block content %}
+<section class="page-heading">
+    <div>
+        <p class="eyebrow">Operations overview</p>
+        <h1>IT support dashboard</h1>
+    </div>
+    <a class="button button-primary" href="{% url 'ticket_create' %}">Create ticket</a>
+</section>
+
+<section class="stats-grid">
+    {% for value, label in statuses %}
+        <article class="stat">
+            <span>{{ label }}</span>
+            <strong>{{ stats|get_item:value|default:0 }}</strong>
+        </article>
+    {% endfor %}
+</section>
+
+<div class="detail-layout">
+    <section class="panel">
+        <h2>Recent tickets</h2>
+        {% for ticket in recent_tickets %}
+            <a class="mini-row" href="{{ ticket.get_absolute_url }}">
+                <span>
+                    <strong>{{ ticket.ticket_number|default:ticket.id }} {{ ticket.title }}</strong>
+                    <small>{{ ticket.requester_name }}{% if ticket.assigned_to %} · assigned to {{ ticket.assigned_to }}{% endif %}</small>
+                </span>
+                <mark class="pill status-{{ ticket.status }}">{{ ticket.get_status_display }}</mark>
+            </a>
+        {% empty %}
+            <p class="muted">No tickets have been created yet.</p>
+        {% endfor %}
+    </section>
+
+    <aside class="panel">
+        <h2>Priority mix</h2>
+        {% for value, label in priorities %}
+            <div class="metric-line">
+                <span>{{ label }}</span>
+                <strong>{{ priority_stats|get_item:value|default:0 }}</strong>
+            </div>
+        {% endfor %}
+    </aside>
+</div>
+{% endblock %}

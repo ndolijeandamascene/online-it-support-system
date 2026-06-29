@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block title %}Knowledge Base | Online IT Support{% endblock %}
+
+{% block content %}
+<section class="page-heading">
+    <div>
+        <p class="eyebrow">Self service</p>
+        <h1>Knowledge base</h1>
+    </div>
+</section>
+
+<form class="filters filters-two" method="get">
+    <input type="search" name="q" value="{{ query }}" placeholder="Search FAQs, guides, and manuals">
+    <button class="button" type="submit">Search</button>
+</form>
+
+<section class="card-grid">
+    {% for article in articles %}
+        <a class="panel article-card" href="{{ article.get_absolute_url }}">
+            <mark class="pill">{{ article.get_category_display }}</mark>
+            <h2>{{ article.title }}</h2>
+            <p>{{ article.summary }}</p>
+        </a>
+    {% empty %}
+        <div class="empty-state">No knowledge base articles found.</div>
+    {% endfor %}
+</section>
+{% endblock %}

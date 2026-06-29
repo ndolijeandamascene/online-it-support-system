@@ -43,7 +43,7 @@
     {% for ticket in tickets %}
         <a class="ticket-row" href="{{ ticket.get_absolute_url }}">
             <span>
-                <strong>#{{ ticket.id }} {{ ticket.title }}</strong>
+                <strong>{{ ticket.ticket_number|default:ticket.id }} {{ ticket.title }}</strong>
                 <small>{{ ticket.get_category_display }}</small>
             </span>
             <span>{{ ticket.requester_name }}</span>

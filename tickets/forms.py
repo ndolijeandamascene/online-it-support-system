@@ -1,6 +1,6 @@
 from django import forms
 
-from .models import Ticket, TicketUpdate
+from .models import Ticket, TicketAttachment, TicketUpdate
 
 
 class TicketForm(forms.ModelForm):
@@ -23,13 +23,22 @@ class TicketForm(forms.ModelForm):
 class TicketStatusForm(forms.ModelForm):
     class Meta:
         model = Ticket
-        fields = ["status", "priority"]
+        fields = ["assigned_to", "status", "priority", "resolution_notes"]
+        widgets = {
+            "resolution_notes": forms.Textarea(attrs={"rows": 3}),
+        }
 
 
 class TicketUpdateForm(forms.ModelForm):
     class Meta:
         model = TicketUpdate
-        fields = ["author", "note"]
+        fields = ["author", "note", "internal"]
         widgets = {
             "note": forms.Textarea(attrs={"rows": 3}),
         }
+
+
+class TicketAttachmentForm(forms.ModelForm):
+    class Meta:
+        model = TicketAttachment
+        fields = ["file", "uploaded_by"]

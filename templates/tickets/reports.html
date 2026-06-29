@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block title %}Reports | Online IT Support{% endblock %}
+
+{% block content %}
+<section class="page-heading">
+    <div>
+        <p class="eyebrow">Analytics</p>
+        <h1>Reports</h1>
+    </div>
+</section>
+
+<div class="reports-grid">
+    <section class="panel">
+        <h2>Tickets by status</h2>
+        {% for item in by_status %}
+            <div class="metric-line"><span>{{ item.status }}</span><strong>{{ item.total }}</strong></div>
+        {% empty %}
+            <p class="muted">No ticket data yet.</p>
+        {% endfor %}
+    </section>
+    <section class="panel">
+        <h2>Tickets by category</h2>
+        {% for item in by_category %}
+            <div class="metric-line"><span>{{ item.category }}</span><strong>{{ item.total }}</strong></div>
+        {% empty %}
+            <p class="muted">No ticket data yet.</p>
+        {% endfor %}
+    </section>
+    <section class="panel">
+        <h2>Department statistics</h2>
+        {% for item in by_department %}
+            <div class="metric-line"><span>{{ item.department__name|default:"Unassigned" }}</span><strong>{{ item.total }}</strong></div>
+        {% empty %}
+            <p class="muted">No ticket data yet.</p>
+        {% endfor %}
+    </section>
+</div>
+{% endblock %}

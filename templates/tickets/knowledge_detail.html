@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block title %}{{ article.title }} | Online IT Support{% endblock %}
+
+{% block content %}
+<section class="page-heading">
+    <div>
+        <p class="eyebrow">{{ article.get_category_display }}</p>
+        <h1>{{ article.title }}</h1>
+    </div>
+    <a class="button" href="{% url 'knowledge_list' %}">Back to knowledge</a>
+</section>
+
+<article class="panel readable">
+    <p class="muted">{{ article.summary }}</p>
+    <div>{{ article.content|linebreaks }}</div>
+</article>
+{% endblock %}

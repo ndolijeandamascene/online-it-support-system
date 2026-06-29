@@ -5,7 +5,7 @@
 {% block content %}
 <section class="page-heading">
     <div>
-        <p class="eyebrow">Ticket #{{ ticket.id }}</p>
+        <p class="eyebrow">Ticket {{ ticket.ticket_number|default:ticket.id }}</p>
         <h1>{{ ticket.title }}</h1>
     </div>
     <a class="button" href="{% url 'ticket_list' %}">Back to tickets</a>
@@ -16,13 +16,18 @@
         <div class="meta-grid">
             <span><strong>Requester</strong>{{ ticket.requester_name }}</span>
             <span><strong>Email</strong>{{ ticket.requester_email }}</span>
-            <span><strong>Department</strong>{{ ticket.department|default:"Not specified" }}</span>
+            <span><strong>Department</strong>{{ ticket.department|default:ticket.department_name|default:"Not specified" }}</span>
+            <span><strong>Assigned to</strong>{{ ticket.assigned_to|default:"Unassigned" }}</span>
             <span><strong>Category</strong>{{ ticket.get_category_display }}</span>
             <span><strong>Priority</strong><mark class="pill priority-{{ ticket.priority }}">{{ ticket.get_priority_display }}</mark></span>
             <span><strong>Status</strong><mark class="pill status-{{ ticket.status }}">{{ ticket.get_status_display }}</mark></span>
         </div>
         <h2>Issue description</h2>
         <p class="description">{{ ticket.description|linebreaksbr }}</p>
+        {% if ticket.resolution_notes %}
+            <h2>Resolution notes</h2>
+            <p class="description">{{ ticket.resolution_notes|linebreaksbr }}</p>
+        {% endif %}
     </article>
 
     <aside class="panel">
@@ -40,6 +45,7 @@
     {% for update in ticket.updates.all %}
         <article class="timeline-item">
             <strong>{{ update.author }}</strong>
+            {% if update.internal %}<mark class="pill">Internal</mark>{% endif %}
             <time>{{ update.created_at|date:"M j, Y H:i" }}</time>
             <p>{{ update.note|linebreaksbr }}</p>
         </article>
@@ -51,6 +57,21 @@
         {% csrf_token %}
         {{ update_form.as_p }}
         <button class="button button-primary" type="submit" name="action" value="note">Add update</button>
+    </form>
+</section>
+
+<section class="panel attachments">
+    <h2>Attachments</h2>
+    {% for attachment in ticket.attachments.all %}
+        <p><a href="{{ attachment.file.url }}">{{ attachment.file.name }}</a> <span class="muted">{{ attachment.uploaded_at|date:"M j, Y H:i" }}</span></p>
+    {% empty %}
+        <p class="muted">No files have been uploaded for this ticket.</p>
+    {% endfor %}
+
+    <form method="post" enctype="multipart/form-data" class="stacked-form note-form">
+        {% csrf_token %}
+        {{ attachment_form.as_p }}
+        <button class="button button-primary" type="submit" name="action" value="attachment">Upload file</button>
     </form>
 </section>
 {% endblock %}

@@ -10,10 +10,17 @@
     </div>
 </section>
 
-<form class="panel form-grid" method="post">
+<form class="panel form-grid" method="post" enctype="multipart/form-data">
     {% csrf_token %}
     {% for field in form %}
         <label class="{% if field.name == 'description' %}span-2{% endif %}">
+            <span>{{ field.label }}</span>
+            {{ field }}
+            {% if field.errors %}<small class="error">{{ field.errors|join:", " }}</small>{% endif %}
+        </label>
+    {% endfor %}
+    {% for field in attachment_form %}
+        <label>
             <span>{{ field.label }}</span>
             {{ field }}
             {% if field.errors %}<small class="error">{{ field.errors|join:", " }}</small>{% endif %}
