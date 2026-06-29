@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% load ticket_extras %}
+
+{% block title %}Tickets | Online IT Support{% endblock %}
+
+{% block content %}
+<section class="page-heading">
+    <div>
+        <p class="eyebrow">Service desk</p>
+        <h1>Support tickets</h1>
+    </div>
+    <a class="button button-primary" href="{% url 'ticket_create' %}">Create ticket</a>
+</section>
+
+<section class="stats-grid">
+    {% for value, label in statuses %}
+        <article class="stat">
+            <span>{{ label }}</span>
+            <strong>{{ stats|get_item:value|default:0 }}</strong>
+        </article>
+    {% endfor %}
+</section>
+
+<form class="filters" method="get">
+    <input type="search" name="q" value="{{ query }}" placeholder="Search tickets, requester, or issue">
+    <select name="status">
+        <option value="">All statuses</option>
+        {% for value, label in statuses %}
+            <option value="{{ value }}" {% if status == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+    </select>
+    <button class="button" type="submit">Filter</button>
+</form>
+
+<section class="ticket-table" aria-label="Tickets">
+    <div class="ticket-row ticket-row-head">
+        <span>Ticket</span>
+        <span>Requester</span>
+        <span>Priority</span>
+        <span>Status</span>
+        <span>Updated</span>
+    </div>
+    {% for ticket in tickets %}
+        <a class="ticket-row" href="{{ ticket.get_absolute_url }}">
+            <span>
+                <strong>#{{ ticket.id }} {{ ticket.title }}</strong>
+                <small>{{ ticket.get_category_display }}</small>
+            </span>
+            <span>{{ ticket.requester_name }}</span>
+            <span><mark class="pill priority-{{ ticket.priority }}">{{ ticket.get_priority_display }}</mark></span>
+            <span><mark class="pill status-{{ ticket.status }}">{{ ticket.get_status_display }}</mark></span>
+            <span>{{ ticket.updated_at|date:"M j, Y H:i" }}</span>
+        </a>
+    {% empty %}
+        <div class="empty-state">No support tickets found.</div>
+    {% endfor %}
+</section>
+{% endblock %}

@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block title %}Ticket #{{ ticket.id }} | Online IT Support{% endblock %}
+
+{% block content %}
+<section class="page-heading">
+    <div>
+        <p class="eyebrow">Ticket #{{ ticket.id }}</p>
+        <h1>{{ ticket.title }}</h1>
+    </div>
+    <a class="button" href="{% url 'ticket_list' %}">Back to tickets</a>
+</section>
+
+<div class="detail-layout">
+    <article class="panel">
+        <div class="meta-grid">
+            <span><strong>Requester</strong>{{ ticket.requester_name }}</span>
+            <span><strong>Email</strong>{{ ticket.requester_email }}</span>
+            <span><strong>Department</strong>{{ ticket.department|default:"Not specified" }}</span>
+            <span><strong>Category</strong>{{ ticket.get_category_display }}</span>
+            <span><strong>Priority</strong><mark class="pill priority-{{ ticket.priority }}">{{ ticket.get_priority_display }}</mark></span>
+            <span><strong>Status</strong><mark class="pill status-{{ ticket.status }}">{{ ticket.get_status_display }}</mark></span>
+        </div>
+        <h2>Issue description</h2>
+        <p class="description">{{ ticket.description|linebreaksbr }}</p>
+    </article>
+
+    <aside class="panel">
+        <h2>Update ticket</h2>
+        <form method="post" class="stacked-form">
+            {% csrf_token %}
+            {{ status_form.as_p }}
+            <button class="button button-primary" type="submit" name="action" value="status">Save status</button>
+        </form>
+    </aside>
+</div>
+
+<section class="panel timeline">
+    <h2>Conversation</h2>
+    {% for update in ticket.updates.all %}
+        <article class="timeline-item">
+            <strong>{{ update.author }}</strong>
+            <time>{{ update.created_at|date:"M j, Y H:i" }}</time>
+            <p>{{ update.note|linebreaksbr }}</p>
+        </article>
+    {% empty %}
+        <p class="muted">No updates have been added yet.</p>
+    {% endfor %}
+
+    <form method="post" class="stacked-form note-form">
+        {% csrf_token %}
+        {{ update_form.as_p }}
+        <button class="button button-primary" type="submit" name="action" value="note">Add update</button>
+    </form>
+</section>
+{% endblock %}

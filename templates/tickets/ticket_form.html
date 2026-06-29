@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block title %}Create Ticket | Online IT Support{% endblock %}
+
+{% block content %}
+<section class="page-heading">
+    <div>
+        <p class="eyebrow">Request help</p>
+        <h1>Create support ticket</h1>
+    </div>
+</section>
+
+<form class="panel form-grid" method="post">
+    {% csrf_token %}
+    {% for field in form %}
+        <label class="{% if field.name == 'description' %}span-2{% endif %}">
+            <span>{{ field.label }}</span>
+            {{ field }}
+            {% if field.errors %}<small class="error">{{ field.errors|join:", " }}</small>{% endif %}
+        </label>
+    {% endfor %}
+    <div class="form-actions span-2">
+        <a class="button" href="{% url 'ticket_list' %}">Cancel</a>
+        <button class="button button-primary" type="submit">Submit ticket</button>
+    </div>
+</form>
+{% endblock %}
